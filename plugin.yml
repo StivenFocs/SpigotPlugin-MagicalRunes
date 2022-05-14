@@ -1,0 +1,27 @@
+name: MagicalRunes
+version: 1.0.0-Release
+main: cloud.stivenfocs.MagicRunes.Loader
+authors: [StivenFocs]
+api-version: 1.17
+softdepend: [PlaceholderAPI]
+description: "MagicalRunes, need additional description?"
+commands:
+  magicalrunes:
+    aliases: [runes]
+permissions:
+  magicrunes.admin.help:
+    default: op
+  magicrunes.admin.reload:
+    default: op
+  magicrunes.admin.give:
+    default: op
+
+  magicrunes.admin.*:
+    children:
+      magicrunes.admin.help: true
+      magicrunes.admin.reload: true
+      magicrunes.admin.give: true
+
+  magicrunes.*:
+    children:
+      magicrunes.admin.+: true
