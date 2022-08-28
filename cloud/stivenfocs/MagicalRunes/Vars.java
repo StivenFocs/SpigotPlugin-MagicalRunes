@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.SimpleCommandMap;
@@ -132,17 +133,24 @@ public class Vars {
                     "- displayname: this is not the item displayname, is the reference name of the rune\n" +
                     "- item: a section that contains all the appaerance data of the rune item\n" +
                     "- commands: the list of commands or actions that the item will execute\n" +
-                    "The commands lists can contain these special actions: (every command/action does have the placeholders: %player_name% %player_displayname% %player_uuid% %world% %x% %y% %z%)\n" +
-                    "  - \"tell:TEXT\" to directly send a message to te player (you can color the message with the \"&\" character) | ex. \"tell:&eHello!\"\n" +
+                    "The commands lists can contain these special actions: (every command/action does have the placeholders: %player_name% %player_displayname% %player_uuid% %world% %x% %y% %z%, and you can also use PlaceholderAPI's placeholders)\n" +
+                    "  - \"tell:TEXT\" to directly send a message to the player (you can color the message with the \"&\" character) | ex. \"tell:&eHello!\"\n" +
+                    "  - \"broadcast:TEXT\" to broadcast a message (you can color the message with the \"&\" character) | ex. \"broadcast:&eHello!\"\n" +
+                    "  - \"title:TITLE TEXT,SUBTITLE TEXT,FADE IN,DURATION,FADE OUT\" to broadcast a message (you can color the message with the \"&\" character) | ex. \"title: ,&d...Something just happened...,5,25,5\"\n" +
+                    "  - \"actionbar:TEXT\" to send an actionbar message to the player (you can color the message with the \"&\" character) | ex. \"actionbar:&eHello!\"\n" +
                     "  - \"sudo:COMMAND\" send a command as the player | ex. \"sudo:spawn\"\n" +
                     "  - \"permitted_sudo:COMMAND\" send a command as the player with permissions skip | ex. \"permitted_sudo:gamemode creative\" \n" +
                     "  - \"sound:SOUND_NAME,VOLUME,PITCH\" play a custom sound to the player | ex. \"sound:ENTITY_PLAYER_LEVELUP,1,3\"\n" +
                     "  - \"particle:PARTICLE_NAME,LOCATION_WORLD,LOCATION_X,LOCATION_Y,LOCATION_Z,AMOUNT,OFFSET_X,OFFSET_Y,OFFSET_Z,SPEED\" spawn a particle in a location with custom data | ex. \"particle:SNEEZE,%world%,%x%,%y%,%z%,1000,1,1,1,0\"\n" +
                     "  - \"effect:EFFECT_NAME,DURATION IN TICKS,AMPLIFIER,AMBIENT,SHOW POTION PARTICLES,SHOW ICON\" add an effect to the player | ex. \"effect:REGENERATION,250,2,false,false,true\"\n" +
+                    "  - \"teleport:WORLD,X,Y,Z\" Teleport the player to a location (you can use \"Double\" values and pitch/yaw also) | ex. \"TELEPORT:world,0,80,80,90,90\"\n" +
                     "  - \"fireball_cannon\"\n" +
                     "  - \"snowball_cannon\"\n" +
                     "  - \"egg_cannon\"\n" +
                     "  - \"lightning\" (the target block is limited to the farthest in a distance of 50 blocks)\n" +
+                    "  - \"openinventory\" force the player to open his inventory\n" +
+                    "  - \"closeinventory\" force the player to close the inventory\n" +
+                    "  - \"kill\" kill the player\n" +
                     "  if the command is not one of these, the plugin will sudo the command at the console\n" +
                     "- type: the interaction type of the item\n" +
                     "CONSUMABLE: at every click (left or right) it will run all the commands and the item amount will descend by 1 or destroy.\n" +
@@ -206,7 +214,7 @@ public class Vars {
                 List<String> new_heal_rune_commands = new ArrayList<>();
                 new_heal_rune_commands.add("sound:ENTITY_PLAYER_LEVELUP,1,3");
                 new_heal_rune_commands.add("particle:SNEEZE,%world%,%x%,%y%,%z%,1000,1,1,1,0");
-                new_heal_rune_commands.add("effect:REGENERATION,250,2,false,false,true");
+                new_heal_rune_commands.add("effect:REGENERATION,90,4,false,false,true");
                 runesConfig.set("heal_rune.commands", new_heal_rune_commands);
                 runesConfig.set("heal_rune.type", "CONSUMABLE");
                 runesConfig.set("heal_rune.delay", 0);
@@ -465,6 +473,31 @@ public class Vars {
             ex.printStackTrace();
         }
         return false;
+    }
+
+    public static String locationToString(Location loc) {
+        return loc.getWorld().getName() + "," + loc.getX() + "," + loc.getY() + "," + loc.getZ() + "," + loc.getYaw() + "," + loc.getPitch();
+    }
+    public static String locationBlockToString(Location loc, Boolean include_world) {
+        if (include_world) {
+            return loc.getWorld().getName() + "," + loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
+        }
+        return loc.getBlockX() + "," + loc.getBlockY() + "," + loc.getBlockZ();
+    }
+
+    public static Location stringToLocation(String strloc) {
+        try {
+            String[] strloc_ = strloc.split(",");
+            if (strloc_.length > 5) {
+                return new Location(Bukkit.getWorld(strloc_[0]), Double.parseDouble(strloc_[1]), Double.parseDouble(strloc_[2]), Double.parseDouble(strloc_[3]), Float.parseFloat(strloc_[4]), Float.parseFloat(strloc_[5]));
+            } else {
+                return new Location(Bukkit.getWorld(strloc_[0]), Double.parseDouble(strloc_[1]), Double.parseDouble(strloc_[2]), Double.parseDouble(strloc_[3]));
+            }
+        } catch (Exception ex) {
+            Vars.plugin.getLogger().info("An exception occurred while trying to load a location from string: " + strloc);
+            ex.printStackTrace();
+            return null;
+        }
     }
 
 }

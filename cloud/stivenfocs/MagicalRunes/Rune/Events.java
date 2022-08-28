@@ -96,11 +96,7 @@ public class Events implements Listener {
 
                     if (rune.getType().equals(RuneType.CONSUMABLE) || rune.getType().equals(RuneType.INFINITE)) {
                         if (rune.getType().equals(RuneType.CONSUMABLE)) {
-                            if (item.getAmount() > 1) {
-                                item.setAmount(item.getAmount() - 1);
-                            } else {
-                                p.getInventory().remove(item);
-                            }
+                            item.setAmount(item.getAmount() - 1);
                         }
                         rune.runCommands(p);
                     }

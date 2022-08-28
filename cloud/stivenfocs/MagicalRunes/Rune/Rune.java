@@ -2,8 +2,11 @@ package cloud.stivenfocs.MagicalRunes.Rune;
 
 import cloud.stivenfocs.MagicalRunes.Vars;
 import me.clip.placeholderapi.PlaceholderAPI;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_17_R1.entity.CraftPlayer;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -69,13 +72,21 @@ public class Rune {
     public void runCommands(Player p) {
         for (String command : getCommands()) {
             try {
-                command = command.replaceAll("%player_name%", p.getName()).replaceAll("%player_displayname%", p.getDisplayName()).replaceAll("%player_uuid%", p.getUniqueId().toString()).replaceAll("%world%", p.getWorld().getName()).replaceAll("%x%", String.valueOf(p.getLocation().getX())).replaceAll("%y%", String.valueOf(p.getLocation().getY())).replaceAll("%z%", String.valueOf(p.getLocation().getZ()));
+                command = command.replaceAll("%player_name%", p.getName()).replace("%player_displayname%", p.getDisplayName()).replaceAll("%player_uuid%", p.getUniqueId().toString()).replaceAll("%world%", p.getWorld().getName()).replaceAll("%x%", String.valueOf(p.getLocation().getX())).replaceAll("%y%", String.valueOf(p.getLocation().getY())).replaceAll("%z%", String.valueOf(p.getLocation().getZ()));
                 if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
                     command = PlaceholderAPI.setPlaceholders(p, command);
                 }
 
                 if (command.startsWith("tell:")) {
-                    p.sendMessage(ChatColor.translateAlternateColorCodes('&', command.replaceAll("tell:", "")));
+                    p.sendMessage(ChatColor.translateAlternateColorCodes('&', command.replace("tell:", "")));
+                } else if (command.startsWith("broadcast:")) {
+                    Bukkit.broadcastMessage(ChatColor.translateAlternateColorCodes('&', command.replace("broadcast:", "")));
+                } else if (command.startsWith("title")) {
+                    String[] title = command.replaceAll("title:", "").split(",");
+                    p.sendTitle(ChatColor.translateAlternateColorCodes('&', title[0]),ChatColor.translateAlternateColorCodes('&', title[1]),Integer.valueOf(title[2]),Integer.valueOf(title[3]),Integer.valueOf(title[4]));
+                } else if (command.startsWith("actionbar")) {
+                    String actionbar = command.replaceAll("actionbar:", "");
+                    p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.translateAlternateColorCodes('&', actionbar)));
                 } else if (command.startsWith("sudo:")) {
                     command = command.replaceAll("sudo:", "");
                     if (Vars.isBukkitCommand(command)) {
@@ -89,7 +100,11 @@ public class Rune {
 
                     p.setOp(true);
                     if (Vars.isBukkitCommand(command)) {
-                        p.performCommand(command);
+                        try {
+                            p.performCommand(command);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
                     } else {
                         p.chat("/" + command);
                     }
@@ -106,6 +121,11 @@ public class Rune {
                     command = command.replaceAll(" ","");
                     String[] particle = command.replaceAll("particle:", "").split(",");
                     Bukkit.getWorld(particle[1]).spawnParticle(Particle.valueOf(particle[0].toUpperCase()), Double.parseDouble(particle[2]), Double.parseDouble(particle[3]), Double.parseDouble(particle[4]), Integer.parseInt(particle[5]), Double.parseDouble(particle[6]), Double.parseDouble(particle[7]), Double.parseDouble(particle[8]), Double.parseDouble(particle[9]));
+                } else if (command.startsWith("kill")) {
+                    p.setHealth(0);
+                }  else if (command.startsWith("teleport")) {
+                    String teleport = command.replaceAll("teleport:", "");
+                    p.teleport(Vars.stringToLocation(teleport));
                 } else if (command.equalsIgnoreCase("fireball_cannon")) {
                     p.launchProjectile(Fireball.class);
                 } else if (command.equalsIgnoreCase("egg_cannon")) {
@@ -117,6 +137,8 @@ public class Rune {
                     if (!target_block.getType().equals(Material.AIR)) {
                         p.getWorld().strikeLightning(target_block.getLocation());
                     }
+                } else if (command.toLowerCase().startsWith("closeinventory")) {
+                    p.closeInventory();
                 } else {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
                 }

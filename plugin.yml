@@ -1,5 +1,5 @@
 name: MagicalRunes
-version: 1.0.1-Release
+version: 1.0.2-Release
 main: cloud.stivenfocs.MagicalRunes.Loader
 authors: [StivenFocs]
 api-version: 1.17
